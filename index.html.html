@@ -1,0 +1,784 @@
+<!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#faf9f5;color:#141413}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
+<title>Safelight</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Big+Shoulders+Display:wght@700;800&family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@400;500;600&display=swap">
+<style>
+/* Layout: a lab bench. Narrow headline up top, the working bench (preview left, controls right) directly below, reference sections after in ruled rows instead of cards. */
+:root{
+  --paper:#EAEFF3; --panel:#F7F9FB; --panel-2:#E1E9EF; --ink:#0D1A2A; --ink-2:#46586B; --line:#C6D2DC;
+  --accent:#1B4DB8; --on-accent:#FFFFFF; --accent-soft:#D9E5F8;
+  --good:#1B7A4B; --bad:#B4402F; --chk-a:#DCE3E9; --chk-b:#EEF2F5;
+  --f-display:'Big Shoulders Display','Arial Narrow',Impact,sans-serif;
+  --f-body:'IBM Plex Sans',system-ui,-apple-system,'Segoe UI',sans-serif;
+  --f-mono:'IBM Plex Mono',ui-monospace,Menlo,Consolas,monospace;
+}
+@media (prefers-color-scheme:dark){
+  :root:not([data-theme="light"]){
+    --paper:#08121C; --panel:#0E1B28; --panel-2:#142636; --ink:#E4EDF5; --ink-2:#8FA3B7; --line:#213446;
+    --accent:#6EA3FF; --on-accent:#06111D; --accent-soft:#13283F;
+    --good:#58C48C; --bad:#F08B78; --chk-a:#16222E; --chk-b:#1B2B3A; color-scheme:dark;
+  }
+}
+:root[data-theme="dark"]{
+  --paper:#08121C; --panel:#0E1B28; --panel-2:#142636; --ink:#E4EDF5; --ink-2:#8FA3B7; --line:#213446;
+  --accent:#6EA3FF; --on-accent:#06111D; --accent-soft:#13283F;
+  --good:#58C48C; --bad:#F08B78; --chk-a:#16222E; --chk-b:#1B2B3A; color-scheme:dark;
+}
+*{box-sizing:border-box}
+body{background:var(--paper);color:var(--ink);font-family:var(--f-body);font-size:15px;line-height:1.55}
+a{color:var(--accent)}
+:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.wrap{max-width:1200px;margin-inline:auto;padding-inline:clamp(16px,4vw,32px)}
+.mono{font-family:var(--f-mono)}
+.eyebrow{font-family:var(--f-mono);font-size:12px;letter-spacing:.12em;text-transform:uppercase;color:var(--accent)}
+
+/* header */
+.top{display:flex;align-items:center;justify-content:space-between;gap:16px;padding-block:18px}
+.brand{display:flex;align-items:center;gap:10px;font-family:var(--f-display);font-weight:800;font-size:1.5rem;letter-spacing:.14em;text-transform:uppercase;color:var(--ink);text-decoration:none}
+.brand svg{width:26px;height:26px;flex:none}
+.nav{display:flex;gap:20px;flex-wrap:wrap;font-family:var(--f-mono);font-size:12px;letter-spacing:.08em;text-transform:uppercase}
+.nav a{color:var(--ink-2);text-decoration:none}
+.nav a:hover{color:var(--accent)}
+
+/* hero */
+.hero{display:grid;grid-template-columns:minmax(0,1.5fr) minmax(0,1fr);gap:clamp(20px,4vw,56px);align-items:end;padding-block:28px 32px}
+.hero h1{font-family:var(--f-display);font-weight:800;text-transform:uppercase;font-size:clamp(2.7rem,7.2vw,5.4rem);line-height:.92;letter-spacing:.004em;margin:12px 0 0;text-wrap:balance}
+.hero p{margin:0 0 16px;color:var(--ink-2);max-width:46ch;font-size:16px}
+.facts{list-style:none;margin:0;padding:0;font-family:var(--f-mono);font-size:12.5px;color:var(--ink-2)}
+.facts li{padding-block:8px;border-top:1px solid var(--line)}
+.facts b{color:var(--ink);font-weight:500}
+
+/* bench */
+.bench{border:1px solid var(--line);background:var(--panel);border-radius:6px;overflow:hidden}
+.bench-head{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:12px;padding:12px 16px;border-bottom:1px solid var(--line)}
+.file{display:flex;align-items:center;gap:10px;min-width:0;flex:1 1 260px}
+.file-name{font-family:var(--f-mono);font-size:13px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;min-width:0}
+.badge{font-family:var(--f-mono);font-size:10.5px;letter-spacing:.1em;text-transform:uppercase;background:var(--accent-soft);color:var(--accent);padding:3px 7px;border-radius:3px;flex:none}
+.head-actions{display:flex;flex-wrap:wrap;gap:8px}
+.btn{font:500 13px var(--f-body);color:var(--ink);background:transparent;border:1px solid var(--line);border-radius:4px;padding:8px 14px;cursor:pointer;min-height:36px}
+.btn:hover{border-color:var(--ink-2)}
+.btn.primary{background:var(--accent);border-color:var(--accent);color:var(--on-accent)}
+.btn.primary:hover{filter:brightness(1.08)}
+.btn:disabled{opacity:.5;cursor:not-allowed}
+.grid{display:grid;grid-template-columns:minmax(0,1fr) 350px}
+.stage{position:relative;min-height:440px;padding:20px;display:grid;place-items:center;border-right:1px solid var(--line);
+  background-color:var(--chk-b);
+  background-image:linear-gradient(45deg,var(--chk-a) 25%,transparent 25%,transparent 75%,var(--chk-a) 75%),linear-gradient(45deg,var(--chk-a) 25%,transparent 25%,transparent 75%,var(--chk-a) 75%);
+  background-size:20px 20px;background-position:0 0,10px 10px}
+#view{display:block;max-width:100%;max-height:540px;width:auto;height:auto;box-shadow:0 10px 30px rgba(0,0,0,.22)}
+.stage.drag::after{content:"Drop an image to open it";position:absolute;inset:10px;display:grid;place-items:center;border:2px dashed var(--accent);background:var(--accent-soft);color:var(--accent);font-family:var(--f-mono);font-size:14px;border-radius:4px;opacity:.96}
+.loading{font-family:var(--f-mono);font-size:13px;color:var(--ink-2)}
+.panel{min-width:0}
+.tabs{display:flex;border-bottom:1px solid var(--line)}
+.tab{flex:1;font:500 12px var(--f-mono);letter-spacing:.08em;text-transform:uppercase;color:var(--ink-2);background:transparent;border:0;border-bottom:2px solid transparent;padding:14px 4px 12px;cursor:pointer}
+.tab:hover{color:var(--ink)}
+.tab[aria-selected="true"]{color:var(--ink);border-bottom-color:var(--accent)}
+.pane{padding:18px 16px 20px;display:grid;gap:18px}
+.pane[hidden]{display:none}
+.pane h3{margin:0;font-family:var(--f-display);font-weight:700;font-size:1.35rem;letter-spacing:.06em;text-transform:uppercase}
+.lbl{display:block;font-family:var(--f-mono);font-size:11.5px;letter-spacing:.08em;text-transform:uppercase;color:var(--ink-2);margin-bottom:6px}
+.two{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.num{display:flex;align-items:center;gap:8px}
+.num input,.text-in{width:100%;min-width:0;height:38px;border:1px solid var(--line);background:var(--paper);color:var(--ink);border-radius:4px;padding:0 10px;font:400 14px var(--f-mono)}
+.num span{font:12px var(--f-mono);color:var(--ink-2)}
+.check{display:flex;align-items:center;gap:8px;font-size:14px;cursor:pointer}
+.check input{accent-color:var(--accent);width:16px;height:16px}
+.seg{display:flex;flex-wrap:wrap;gap:6px}
+.seg button{font:500 13px var(--f-body);color:var(--ink);background:transparent;border:1px solid var(--line);border-radius:4px;padding:7px 10px;cursor:pointer;min-height:34px}
+.seg button:hover{border-color:var(--ink-2)}
+.seg button[aria-checked="true"]{background:var(--accent);border-color:var(--accent);color:var(--on-accent)}
+.seg button:disabled{opacity:.45;cursor:not-allowed}
+.slider{display:grid;grid-template-columns:1fr auto;gap:2px 8px;align-items:baseline}
+.slider label{font-family:var(--f-mono);font-size:11.5px;letter-spacing:.08em;text-transform:uppercase;color:var(--ink-2)}
+.slider output{font:500 13px var(--f-mono);font-variant-numeric:tabular-nums}
+.slider input{grid-column:1/-1;width:100%;accent-color:var(--accent);margin:6px 0 0}
+.hint{margin:0;font-size:13px;color:var(--ink-2)}
+.hint.warn{color:var(--bad)}
+.actions{display:flex;flex-wrap:wrap;gap:8px}
+.actions .btn{flex:1 1 120px}
+.fallback{display:grid;gap:8px;padding-top:4px}
+.fallback img{max-width:100%;height:auto;border:1px solid var(--line);background:var(--chk-b)}
+.readout{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));border-top:1px solid var(--line)}
+.cell{padding:12px 16px;border-right:1px solid var(--line);min-width:0}
+.cell:last-child{border-right:0}
+.cell .k{font:11px var(--f-mono);letter-spacing:.1em;text-transform:uppercase;color:var(--ink-2)}
+.cell .v{font:500 16px var(--f-mono);font-variant-numeric:tabular-nums;margin-top:2px;overflow-wrap:anywhere}
+.cell .s{font:12.5px var(--f-mono);color:var(--ink-2);font-variant-numeric:tabular-nums;overflow-wrap:anywhere}
+.good{color:var(--good)} .bad{color:var(--bad)}
+.toast{position:fixed;left:50%;bottom:calc(20px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);background:var(--ink);color:var(--paper);font:500 13px var(--f-body);padding:10px 16px;border-radius:4px;max-width:calc(100vw - 32px);z-index:20}
+.sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
+
+/* sections */
+section.block{padding-block:clamp(44px,7vw,80px) 0}
+.block h2{font-family:var(--f-display);font-weight:800;text-transform:uppercase;font-size:clamp(1.9rem,4.4vw,3rem);line-height:1;letter-spacing:.01em;margin:8px 0 0;text-wrap:balance}
+.tools{margin:28px 0 0;padding:0}
+.tool{display:grid;grid-template-columns:minmax(0,230px) minmax(0,1fr);gap:8px 32px;padding-block:20px;border-top:1px solid var(--line)}
+.tool:last-child{border-bottom:1px solid var(--line)}
+.tool dt{font-family:var(--f-display);font-weight:700;font-size:1.7rem;letter-spacing:.05em;text-transform:uppercase;line-height:1.05}
+.tool dd{margin:0;min-width:0}
+.tool p{margin:0 0 8px;max-width:62ch}
+.spec{font:12.5px var(--f-mono);color:var(--ink-2)}
+.scroll{overflow-x:auto;margin-top:28px}
+table{border-collapse:collapse;width:100%;min-width:600px}
+th{font:500 11.5px var(--f-mono);letter-spacing:.1em;text-transform:uppercase;color:var(--ink-2);text-align:left;padding:10px 14px 10px 0;border-bottom:1px solid var(--ink-2)}
+td{padding:14px 14px 14px 0;border-bottom:1px solid var(--line);vertical-align:top}
+td:first-child{font-family:var(--f-display);font-weight:700;font-size:1.4rem;letter-spacing:.06em}
+.three{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:0 36px;margin-top:28px}
+.three div{border-top:1px solid var(--ink-2);padding-top:14px}
+.three b{display:block;font:500 12px var(--f-mono);letter-spacing:.1em;text-transform:uppercase;color:var(--accent);margin-bottom:6px}
+.three p{margin:0;color:var(--ink-2)}
+.faq{margin-top:28px;max-width:820px}
+details{border-top:1px solid var(--line)}
+details:last-child{border-bottom:1px solid var(--line)}
+summary{list-style:none;cursor:pointer;padding:16px 36px 16px 0;font-weight:600;position:relative}
+summary::-webkit-details-marker{display:none}
+summary::after{content:"+";position:absolute;right:4px;top:12px;font:400 22px var(--f-mono);color:var(--accent)}
+details[open] summary::after{content:"\2212"}
+details p{margin:0 0 16px;color:var(--ink-2);max-width:64ch}
+footer{margin-top:clamp(44px,7vw,80px);border-top:1px solid var(--line);padding-block:24px 32px;display:flex;flex-wrap:wrap;justify-content:space-between;gap:8px;font:12.5px var(--f-mono);color:var(--ink-2)}
+
+@media (max-width:900px){
+  .hero{grid-template-columns:minmax(0,1fr);align-items:start}
+  .grid{grid-template-columns:minmax(0,1fr)}
+  .stage{border-right:0;border-bottom:1px solid var(--line);min-height:300px}
+  #view{max-height:60vh}
+  .readout{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .cell:nth-child(2){border-right:0}
+  .cell:nth-child(-n+2){border-bottom:1px solid var(--line)}
+  .three{grid-template-columns:minmax(0,1fr);gap:20px}
+}
+@media (max-width:640px){
+  .tool{grid-template-columns:minmax(0,1fr)}
+  .nav{gap:14px}
+  .top{flex-wrap:wrap}
+}
+@media (prefers-reduced-motion:reduce){*{scroll-behavior:auto!important;transition:none!important}}
+</style>
+
+<div class="wrap">
+  <header class="top">
+    <a class="brand" href="#bench" aria-label="Safelight">
+      <svg viewBox="0 0 26 26" aria-hidden="true"><circle cx="13" cy="13" r="11.5" fill="none" stroke="var(--ink)" stroke-width="1.6"/><circle cx="13" cy="13" r="6.2" fill="var(--accent)"/><circle cx="10.6" cy="10.6" r="1.7" fill="var(--on-accent)" opacity=".9"/></svg>
+      Safelight
+    </a>
+    <nav class="nav" aria-label="Sections">
+      <a href="#tools">Tools</a><a href="#formats">Formats</a><a href="#privacy">Privacy</a><a href="#faq">FAQ</a>
+    </nav>
+  </header>
+
+  <div class="hero">
+    <div>
+      <div class="eyebrow">Resize · Crop · Compress · Convert</div>
+      <h1>Edit images without handing them over.</h1>
+    </div>
+    <div>
+      <p>Safelight resizes, crops, retouches and compresses photos inside this page. Open a file, adjust it, and save the result. Nothing is uploaded.</p>
+      <ul class="facts">
+        <li><b>Opens</b> JPEG · PNG · WebP · GIF · BMP</li>
+        <li><b>Saves</b> JPEG · WebP · PNG</li>
+        <li><b>Limit</b> 16,384 px per side</li>
+      </ul>
+    </div>
+  </div>
+
+  <section class="bench" id="bench" aria-label="Image workbench">
+    <div class="bench-head">
+      <div class="file">
+        <span class="badge" id="badge" hidden>Sample image</span>
+        <span class="file-name" id="fileName">Preparing sample…</span>
+      </div>
+      <div class="head-actions">
+        <input id="file" class="sr" type="file" accept="image/*" aria-label="Choose an image file">
+        <button class="btn primary" id="openBtn" type="button">Open image</button>
+        <button class="btn" id="sampleBtn" type="button">Use sample</button>
+        <button class="btn" id="resetBtn" type="button">Reset edits</button>
+      </div>
+    </div>
+
+    <div class="grid">
+      <div class="stage" id="stage">
+        <canvas id="view" width="2" height="2" role="img" aria-label="Preview of the edited image"></canvas>
+        <span class="loading" id="loading">Preparing sample image…</span>
+      </div>
+
+      <div class="panel">
+        <div class="tabs" role="tablist" aria-label="Tools">
+          <button class="tab" role="tab" id="tab-resize" aria-controls="pane-resize" aria-selected="true" data-tab="resize" type="button">Resize</button>
+          <button class="tab" role="tab" id="tab-crop" aria-controls="pane-crop" aria-selected="false" tabindex="-1" data-tab="crop" type="button">Crop</button>
+          <button class="tab" role="tab" id="tab-adjust" aria-controls="pane-adjust" aria-selected="false" tabindex="-1" data-tab="adjust" type="button">Adjust</button>
+          <button class="tab" role="tab" id="tab-export" aria-controls="pane-export" aria-selected="false" tabindex="-1" data-tab="export" type="button">Export</button>
+        </div>
+
+        <div class="pane" role="tabpanel" id="pane-resize" aria-labelledby="tab-resize" data-pane="resize">
+          <h3>Resize</h3>
+          <div class="two">
+            <div><label class="lbl" for="w">Width</label><div class="num"><input id="w" type="number" min="1" max="16384" inputmode="numeric"><span>px</span></div></div>
+            <div><label class="lbl" for="h">Height</label><div class="num"><input id="h" type="number" min="1" max="16384" inputmode="numeric"><span>px</span></div></div>
+          </div>
+          <label class="check"><input type="checkbox" id="lock" checked> Keep proportions</label>
+          <div>
+            <span class="lbl" id="presetsLbl">Presets</span>
+            <div class="seg" id="presets" role="group" aria-labelledby="presetsLbl">
+              <button type="button" data-pct="100">Original</button>
+              <button type="button" data-pct="75">75%</button>
+              <button type="button" data-pct="50">50%</button>
+              <button type="button" data-pct="25">25%</button>
+              <button type="button" data-w="3840">3840</button>
+              <button type="button" data-w="1920">1920</button>
+              <button type="button" data-w="1280">1280</button>
+              <button type="button" data-w="1080">1080</button>
+              <button type="button" data-w="800">800</button>
+            </div>
+          </div>
+          <p class="hint" id="resizeHint"></p>
+        </div>
+
+        <div class="pane" role="tabpanel" id="pane-crop" aria-labelledby="tab-crop" data-pane="crop" hidden>
+          <h3>Crop &amp; rotate</h3>
+          <div>
+            <span class="lbl" id="aspectLbl">Aspect ratio</span>
+            <div class="seg" role="radiogroup" aria-labelledby="aspectLbl" data-key="aspect">
+              <button type="button" role="radio" aria-checked="true" data-v="orig">Original</button>
+              <button type="button" role="radio" aria-checked="false" data-v="1:1">1:1</button>
+              <button type="button" role="radio" aria-checked="false" data-v="4:3">4:3</button>
+              <button type="button" role="radio" aria-checked="false" data-v="3:2">3:2</button>
+              <button type="button" role="radio" aria-checked="false" data-v="16:9">16:9</button>
+              <button type="button" role="radio" aria-checked="false" data-v="4:5">4:5</button>
+              <button type="button" role="radio" aria-checked="false" data-v="9:16">9:16</button>
+            </div>
+          </div>
+          <div class="slider"><label for="r-zoom">Zoom</label><output id="o-zoom" for="r-zoom">1.00×</output><input id="r-zoom" type="range" min="100" max="400" step="1" value="100" data-key="zoom" data-div="100"></div>
+          <div class="slider"><label for="r-panX">Shift left / right</label><output id="o-panX" for="r-panX">50%</output><input id="r-panX" type="range" min="0" max="100" step="1" value="50" data-key="panX" data-div="100"></div>
+          <div class="slider"><label for="r-panY">Shift up / down</label><output id="o-panY" for="r-panY">50%</output><input id="r-panY" type="range" min="0" max="100" step="1" value="50" data-key="panY" data-div="100"></div>
+          <div>
+            <span class="lbl" id="orientLbl">Orientation</span>
+            <div class="seg" role="group" aria-labelledby="orientLbl" id="orient">
+              <button type="button" data-act="rotL">↺ Rotate left</button>
+              <button type="button" data-act="rotR">↻ Rotate right</button>
+              <button type="button" data-act="flipH">⇆ Flip</button>
+              <button type="button" data-act="flipV">⇅ Flip</button>
+            </div>
+          </div>
+        </div>
+
+        <div class="pane" role="tabpanel" id="pane-adjust" aria-labelledby="tab-adjust" data-pane="adjust" hidden>
+          <h3>Adjust</h3>
+          <div>
+            <span class="lbl" id="lookLbl">Look</span>
+            <div class="seg" role="radiogroup" aria-labelledby="lookLbl" data-key="look">
+              <button type="button" role="radio" aria-checked="true" data-v="none">Natural</button>
+              <button type="button" role="radio" aria-checked="false" data-v="mono">Mono</button>
+              <button type="button" role="radio" aria-checked="false" data-v="noir">Noir</button>
+              <button type="button" role="radio" aria-checked="false" data-v="sepia">Sepia</button>
+              <button type="button" role="radio" aria-checked="false" data-v="cyano">Cyanotype</button>
+            </div>
+          </div>
+          <div class="slider"><label for="r-bright">Brightness</label><output id="o-bright" for="r-bright">0</output><input id="r-bright" type="range" min="-100" max="100" step="1" value="0" data-key="bright"></div>
+          <div class="slider"><label for="r-contrast">Contrast</label><output id="o-contrast" for="r-contrast">0</output><input id="r-contrast" type="range" min="-100" max="100" step="1" value="0" data-key="contrast"></div>
+          <div class="slider"><label for="r-sat">Saturation</label><output id="o-sat" for="r-sat">0</output><input id="r-sat" type="range" min="-100" max="100" step="1" value="0" data-key="sat"></div>
+          <div class="slider" id="blurRow"><label for="r-blur">Blur</label><output id="o-blur" for="r-blur">0 px</output><input id="r-blur" type="range" min="0" max="20" step="0.5" value="0" data-key="blur"></div>
+        </div>
+
+        <div class="pane" role="tabpanel" id="pane-export" aria-labelledby="tab-export" data-pane="export" hidden>
+          <h3>Compress &amp; convert</h3>
+          <div>
+            <span class="lbl" id="fmtLbl">Format</span>
+            <div class="seg" role="radiogroup" aria-labelledby="fmtLbl" data-key="fmt">
+              <button type="button" role="radio" aria-checked="true" data-v="jpeg">JPEG</button>
+              <button type="button" role="radio" aria-checked="false" data-v="webp" id="webpBtn">WebP</button>
+              <button type="button" role="radio" aria-checked="false" data-v="png">PNG</button>
+            </div>
+          </div>
+          <p class="hint" id="fmtHint"></p>
+          <div class="slider"><label for="r-quality">Quality</label><output id="o-quality" for="r-quality">82</output><input id="r-quality" type="range" min="1" max="100" step="1" value="82" data-key="quality"></div>
+          <p class="hint" id="qHint"></p>
+          <div><label class="lbl" for="fname">File name</label><input class="text-in" id="fname" type="text" autocomplete="off" spellcheck="false" placeholder="name-1920x1280"></div>
+          <div class="actions">
+            <button class="btn primary" id="saveBtn" type="button">Save image</button>
+            <button class="btn" id="copyBtn" type="button">Copy as PNG</button>
+          </div>
+          <div class="fallback" id="fallback" hidden>
+            <p class="hint">Saving isn't available where this page is open. Press and hold the image below, or right-click it, to save it.</p>
+            <img id="fallbackImg" alt="Edited image, ready to save">
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="readout" aria-label="Result summary">
+      <div class="cell"><div class="k">Original</div><div class="v" id="ro-orig">–</div><div class="s" id="ro-orig-s">&nbsp;</div></div>
+      <div class="cell"><div class="k">Output</div><div class="v" id="ro-out">–</div><div class="s" id="ro-out-s">&nbsp;</div></div>
+      <div class="cell"><div class="k">File size</div><div class="v" id="ro-change">–</div><div class="s">vs original file</div></div>
+      <div class="cell"><div class="k">Setting</div><div class="v" id="ro-set">–</div><div class="s" id="ro-set-s">&nbsp;</div></div>
+    </div>
+  </section>
+
+  <section class="block" id="tools">
+    <div class="eyebrow">What's on the bench</div>
+    <h2>Five jobs, one image, no round trip.</h2>
+    <dl class="tools">
+      <div class="tool"><dt>Resize</dt><dd><p>Set an exact width and height, or scale by percentage. Proportions stay locked until you unlock them, and the readout shows the real encoded file size as you go.</p><div class="spec">3840 · 1920 · 1280 · 1080 · 800 px presets · 75 / 50 / 25 %</div></dd></div>
+      <div class="tool"><dt>Crop &amp; rotate</dt><dd><p>Choose a ratio, zoom in, and shift the frame until the subject sits where you want it. Turn the image in 90° steps or mirror it either way.</p><div class="spec">Original · 1:1 · 4:3 · 3:2 · 16:9 · 4:5 · 9:16 · zoom to 4×</div></dd></div>
+      <div class="tool"><dt>Compress</dt><dd><p>Drag quality down until the file is as small as you can accept. The size and the percentage saved update after every change.</p><div class="spec">Quality 1–100 · JPEG and WebP</div></dd></div>
+      <div class="tool"><dt>Convert</dt><dd><p>Save any opened file as JPEG, WebP or PNG. JPEG gets a white background where the original was transparent; WebP and PNG keep transparency.</p><div class="spec">GIF, BMP and PNG in · JPEG, WebP, PNG out</div></dd></div>
+      <div class="tool"><dt>Adjust</dt><dd><p>Correct brightness, contrast and saturation, soften with blur, or apply a look. Cyanotype maps the image onto the deep blue of the old sun-printing process.</p><div class="spec">Natural · Mono · Noir · Sepia · Cyanotype</div></dd></div>
+    </dl>
+  </section>
+
+  <section class="block" id="formats">
+    <div class="eyebrow">Choosing an output</div>
+    <h2>Three formats, three habits.</h2>
+    <div class="scroll">
+      <table>
+        <thead><tr><th>Format</th><th>Best for</th><th>Transparency</th><th>Compression</th></tr></thead>
+        <tbody>
+          <tr><td>JPEG</td><td>Photographs, anything shared by email or upload forms</td><td>No</td><td>Lossy. Quality 75–85 is a good web range.</td></tr>
+          <tr><td>WebP</td><td>Photos and graphics on websites</td><td>Yes</td><td>Lossy. Usually 25–35% smaller than JPEG at similar quality.</td></tr>
+          <tr><td>PNG</td><td>Screenshots, logos, line art, text</td><td>Yes</td><td>Lossless. The quality slider does not apply.</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <section class="block" id="privacy">
+    <div class="eyebrow">Privacy</div>
+    <h2>Nothing leaves this page.</h2>
+    <div class="three">
+      <div><b>No upload</b><p>Your file is read into this page's memory and edited there. Closing the tab discards it.</p></div>
+      <div><b>No account</b><p>There is nothing to sign up for, and no history of what you opened.</p></div>
+      <div><b>No metadata</b><p>Exports are re-encoded from pixels, so camera details and GPS position in the original are not carried over.</p></div>
+    </div>
+  </section>
+
+  <section class="block" id="faq">
+    <div class="eyebrow">Questions</div>
+    <h2>Before you start.</h2>
+    <div class="faq">
+      <details><summary>Which files can I open?</summary><p>JPEG, PNG, WebP, GIF and BMP open in every current browser. AVIF opens where the browser supports it. HEIC opens in Safari but not in most other browsers. Animated GIFs are read as a single frame.</p></details>
+      <details><summary>Why did my file get bigger?</summary><p>The usual causes are saving a photo as PNG, setting quality higher than the original used, or enlarging the image. For photos, try JPEG or WebP at 75–85 and keep the width at or below the original.</p></details>
+      <details><summary>How large can the output be?</summary><p>Up to 16,384 px on a side. Browsers also limit total canvas area, and phones often stop near 16 megapixels. If the size readout reports an error, reduce the width and height.</p></details>
+      <details><summary>Why is there no quality slider for PNG?</summary><p>PNG is lossless, so every pixel is kept. Its file size depends on how much detail the image has. Resize it, or switch to WebP or JPEG, to make it smaller.</p></details>
+      <details><summary>What happens when I press Save?</summary><p>Your browser asks you to confirm the file name before anything is written. If saving isn't available where you opened this page, the result appears as an image you can press and hold, or right-click, to save.</p></details>
+    </div>
+  </section>
+
+  <footer>
+    <span>Safelight · image tools that run in your browser</span>
+    <span>Resize · Crop · Compress · Convert</span>
+  </footer>
+</div>
+
+<div class="toast" id="toast" role="status" aria-live="polite" hidden></div>
+
+<script>
+(function(){
+'use strict';
+var $=function(s){return document.querySelector(s)}, $$=function(s){return Array.prototype.slice.call(document.querySelectorAll(s))};
+var MAX=16384;
+var clamp=function(v,a,b){return Math.min(b,Math.max(a,v))};
+function fmtBytes(n){if(n<1024)return n+' B';if(n<1048576)return (n/1024).toFixed(n<10240?1:0)+' KB';return (n/1048576).toFixed(2)+' MB'}
+function toBlob(cv,mime,q){return new Promise(function(res){try{cv.toBlob(res,mime,q)}catch(e){res(null)}})}
+
+var state={src:null,oriented:null,name:'image',base:'image',fileSize:0,isSample:false,
+  rot:0,flipH:false,flipV:false,aspect:'orig',zoom:1,panX:.5,panY:.5,
+  user:null,lock:true,look:'none',bright:0,contrast:0,sat:0,blur:0,
+  fmt:'jpeg',quality:82,blob:null,busy:false,encError:false};
+
+/* capability probes */
+var webpOK=false; try{webpOK=document.createElement('canvas').toDataURL('image/webp').indexOf('data:image/webp')===0}catch(e){}
+var blurOK=false; try{var tc=document.createElement('canvas').getContext('2d');tc.filter='blur(2px)';blurOK=(tc.filter==='blur(2px)')}catch(e){}
+if(!webpOK){var wb=$('#webpBtn');wb.disabled=true;wb.title='WebP export is not supported in this browser'}
+if(!blurOK){$('#blurRow').hidden=true}
+var dlPromise=(window.claude&&typeof window.claude.use==='function')?Promise.resolve(window.claude.use('downloads')).catch(function(){return null}):Promise.resolve(null);
+
+/* toast */
+var toastT=0;
+function toast(msg){var t=$('#toast');t.textContent=msg;t.hidden=false;clearTimeout(toastT);toastT=setTimeout(function(){t.hidden=true},3400)}
+
+/* geometry */
+function rebuildOriented(){
+  var s=state.src,r=state.rot;
+  if(r===0&&!state.flipH&&!state.flipV){state.oriented=s;return}
+  var swap=(r%180)!==0,sw=s.width,sh=s.height;
+  var c=document.createElement('canvas');c.width=swap?sh:sw;c.height=swap?sw:sh;
+  var x=c.getContext('2d');
+  x.translate(c.width/2,c.height/2);
+  x.scale(state.flipH?-1:1,state.flipV?-1:1);
+  x.rotate(r*Math.PI/180);
+  x.drawImage(s,-sw/2,-sh/2);
+  state.oriented=c;
+}
+function ratioOf(a){if(a==='orig')return state.oriented.width/state.oriented.height;var p=a.split(':');return +p[0]/+p[1]}
+function cropRect(){
+  var O=state.oriented,ow=O.width,oh=O.height,ar=ratioOf(state.aspect),cw,ch;
+  if(ow/oh>ar){ch=oh;cw=oh*ar}else{cw=ow;ch=ow/ar}
+  cw/=state.zoom;ch/=state.zoom;
+  return {sx:(ow-cw)*state.panX,sy:(oh-ch)*state.panY,cw:cw,ch:ch};
+}
+function naturalSize(){var r=cropRect();return {w:Math.max(1,Math.round(r.cw)),h:Math.max(1,Math.round(r.ch))}}
+function outSize(){
+  var n=naturalSize();
+  if(!state.user)return n;
+  var w=clamp(Math.round(state.user.w),1,MAX);
+  if(state.lock)return {w:w,h:clamp(Math.round(w*n.h/n.w),1,MAX)};
+  return {w:w,h:clamp(Math.round(state.user.h),1,MAX)};
+}
+
+/* colour work */
+var CY=[[6,24,58],[30,92,190],[222,238,255]];
+function applyColor(x,w,h){
+  var bright=state.bright,contrast=state.contrast,sat=state.sat,look=state.look;
+  if(!bright&&!contrast&&!sat&&look==='none')return;
+  var img=x.getImageData(0,0,w,h),d=img.data;
+  var add=bright*1.2,C=contrast*1.5,f=(259*(C+255))/(255*(259-C)),s=1+sat/100,doAdj=bright||contrast||sat;
+  for(var i=0;i<d.length;i+=4){
+    var r=d[i],g=d[i+1],b=d[i+2];
+    if(doAdj){
+      r+=add;g+=add;b+=add;
+      r=f*(r-128)+128;g=f*(g-128)+128;b=f*(b-128)+128;
+      if(sat){var l0=.299*r+.587*g+.114*b;r=l0+(r-l0)*s;g=l0+(g-l0)*s;b=l0+(b-l0)*s}
+    }
+    if(look!=='none'){
+      var l=clamp(.299*r+.587*g+.114*b,0,255);
+      if(look==='mono'){r=g=b=l}
+      else if(look==='noir'){var n=clamp((l-128)*1.4+118,0,255);r=g=b=n}
+      else if(look==='sepia'){var nr=.393*r+.769*g+.189*b,ng=.349*r+.686*g+.168*b,nb=.272*r+.534*g+.131*b;r=nr;g=ng;b=nb}
+      else if(look==='cyano'){
+        var t=l/255,a=t<.5?CY[0]:CY[1],bb=t<.5?CY[1]:CY[2],u=t<.5?t*2:(t-.5)*2;
+        r=a[0]+(bb[0]-a[0])*u;g=a[1]+(bb[1]-a[1])*u;b=a[2]+(bb[2]-a[2])*u;
+      }
+    }
+    d[i]=r;d[i+1]=g;d[i+2]=b;
+  }
+  x.putImageData(img,0,0);
+}
+function paint(cv,w,h,white){
+  cv.width=w;cv.height=h;
+  var x=cv.getContext('2d'),r=cropRect();
+  if(white){x.fillStyle='#fff';x.fillRect(0,0,w,h)}
+  x.imageSmoothingEnabled=true;x.imageSmoothingQuality='high';
+  var bpx=state.blur*(w/1000);
+  if(blurOK&&bpx>0.05)x.filter='blur('+bpx.toFixed(2)+'px)';
+  x.drawImage(state.oriented,r.sx,r.sy,r.cw,r.ch,0,0,w,h);
+  if(blurOK)x.filter='none';
+  applyColor(x,w,h);
+}
+
+/* preview */
+var raf=0,view=$('#view');
+function schedulePreview(){if(raf)return;raf=requestAnimationFrame(function(){raf=0;renderPreview()})}
+function renderPreview(){
+  if(!state.src)return;
+  var o=outSize(),s=Math.min(1,1400/Math.max(o.w,o.h));
+  paint(view,Math.max(1,Math.round(o.w*s)),Math.max(1,Math.round(o.h*s)),state.fmt==='jpeg');
+  updateReadout();
+}
+
+/* encode (real file size) */
+var encTimer=0,encVer=0,encPromise=null;
+var MIME={jpeg:'image/jpeg',webp:'image/webp',png:'image/png'},EXT={jpeg:'jpg',webp:'webp',png:'png'};
+function scheduleEncode(delay){
+  state.blob=null;state.encError=false;state.busy=true;updateReadout();
+  clearTimeout(encTimer);
+  encTimer=setTimeout(function(){encPromise=encode()},delay==null?320:delay);
+}
+async function encode(){
+  var ver=++encVer,o=outSize(),cv=document.createElement('canvas'),blob=null,err=false;
+  try{
+    paint(cv,o.w,o.h,state.fmt==='jpeg');
+    blob=await toBlob(cv,MIME[state.fmt],state.fmt==='png'?undefined:state.quality/100);
+    if(!blob||blob.type!==MIME[state.fmt])err=true;
+  }catch(e){err=true}
+  cv.width=cv.height=0;
+  if(ver!==encVer)return null;
+  state.blob=err?null:blob;state.encError=err;state.busy=false;
+  updateReadout();
+  return state.blob;
+}
+async function ensureBlob(){
+  if(state.blob)return state.blob;
+  clearTimeout(encTimer);
+  return await encode();
+}
+
+/* readout + hints */
+function qualityNote(q){return q>=90?'Archive quality':q>=75?'Good for the web':q>=50?'Small file':'Visible artifacts'}
+function updateReadout(){
+  if(!state.src)return;
+  var o=outSize();
+  $('#ro-orig').textContent=state.src.width+' × '+state.src.height;
+  $('#ro-orig-s').textContent=fmtBytes(state.fileSize);
+  $('#ro-out').textContent=o.w+' × '+o.h;
+  var ch=$('#ro-change');ch.className='v';
+  if(state.encError){$('#ro-out-s').textContent='Too large to encode here';ch.textContent='–'}
+  else if(state.blob){
+    $('#ro-out-s').textContent=fmtBytes(state.blob.size);
+    var p=(1-state.blob.size/state.fileSize)*100;
+    if(p>=0){ch.textContent='−'+p.toFixed(p<10?1:0)+'%';ch.classList.add('good')}
+    else{ch.textContent='+'+(-p).toFixed(-p<10?1:0)+'%';ch.classList.add('bad')}
+  }else{$('#ro-out-s').textContent='Measuring…';ch.textContent='…'}
+  var label={jpeg:'JPEG',webp:'WebP',png:'PNG'}[state.fmt];
+  $('#ro-set').textContent=state.fmt==='png'?label:label+' · '+state.quality;
+  $('#ro-set-s').textContent=state.fmt==='png'?'Lossless':qualityNote(state.quality);
+  $('#saveBtn').disabled=!!state.encError;
+}
+function syncHints(){
+  var h=$('#resizeHint');h.className='hint';
+  if(state.src){
+    var n=naturalSize(),o=outSize();
+    if(o.w>n.w){h.textContent='Larger than the cropped source ('+n.w+' px wide). Enlarging adds pixels, not detail.';h.classList.add('warn')}
+    else if(o.w<n.w){h.textContent='Reduced to '+Math.round(o.w/n.w*100)+'% of the cropped width.'}
+    else{h.textContent='Original size. Pick a preset or type a width.'}
+  }
+  $('#fmtHint').textContent={jpeg:'Photographs. No transparency; clear areas become white.',webp:'Photos and graphics. Smaller than JPEG at similar quality, and keeps transparency.',png:'Lossless. Best for screenshots, logos and sharp edges.'}[state.fmt];
+  var q=$('#r-quality');q.disabled=state.fmt==='png';
+  $('#qHint').textContent=state.fmt==='png'?'PNG is lossless, so file size depends on the image, not a quality setting.':qualityNote(state.quality)+'. Lower quality gives a smaller file.';
+}
+function syncSize(){
+  if(!state.src)return;
+  var o=outSize(),w=$('#w'),h=$('#h');
+  if(document.activeElement!==w)w.value=o.w;
+  if(document.activeElement!==h)h.value=o.h;
+  syncHints();
+}
+function changed(){if(!state.src)return;syncSize();schedulePreview();scheduleEncode()}
+
+/* controls */
+var FORMAT={
+  zoom:function(v){return v.toFixed(2)+'×'},
+  panX:function(v){return Math.round(v*100)+'%'},panY:function(v){return Math.round(v*100)+'%'},
+  bright:function(v){return (v>0?'+':'')+v},contrast:function(v){return (v>0?'+':'')+v},sat:function(v){return (v>0?'+':'')+v},
+  blur:function(v){return v+' px'},quality:function(v){return String(v)}
+};
+$$('input[type=range][data-key]').forEach(function(r){
+  r.addEventListener('input',function(){
+    var k=r.dataset.key,div=+(r.dataset.div||1);
+    state[k]=+r.value/div;
+    $('#o-'+k).textContent=FORMAT[k](state[k]);
+    if(k==='quality'){updateReadout();syncHints();scheduleEncode()}else changed();
+  });
+});
+$$('.seg[data-key]').forEach(function(g){
+  g.addEventListener('click',function(e){
+    var b=e.target.closest('button[data-v]');if(!b||b.disabled)return;
+    var k=g.dataset.key;state[k]=b.dataset.v;
+    Array.prototype.forEach.call(g.querySelectorAll('button'),function(x){x.setAttribute('aria-checked',x===b?'true':'false')});
+    if(k==='fmt')syncHints();
+    changed();
+  });
+});
+$('#orient').addEventListener('click',function(e){
+  var b=e.target.closest('button[data-act]');if(!b||!state.src)return;
+  var a=b.dataset.act;
+  if(a==='rotL')state.rot=(state.rot+270)%360;
+  else if(a==='rotR')state.rot=(state.rot+90)%360;
+  else if(a==='flipH')state.flipH=!state.flipH;
+  else if(a==='flipV')state.flipV=!state.flipV;
+  rebuildOriented();changed();
+});
+$('#w').addEventListener('input',function(){
+  var v=parseInt(this.value,10);if(!v||v<1||!state.src)return;v=clamp(v,1,MAX);
+  var n=naturalSize(),o=outSize();
+  state.user={w:v,h:state.lock?Math.round(v*n.h/n.w):o.h};
+  changed();
+});
+$('#h').addEventListener('input',function(){
+  var v=parseInt(this.value,10);if(!v||v<1||!state.src)return;v=clamp(v,1,MAX);
+  var n=naturalSize(),o=outSize();
+  state.user=state.lock?{w:Math.round(v*n.w/n.h),h:v}:{w:o.w,h:v};
+  changed();
+});
+['#w','#h'].forEach(function(s){$(s).addEventListener('blur',syncSize)});
+$('#lock').addEventListener('change',function(){state.lock=this.checked;changed()});
+$('#presets').addEventListener('click',function(e){
+  var b=e.target.closest('button');if(!b||!state.src)return;
+  var n=naturalSize();
+  if(b.dataset.pct==='100'){state.user=null}
+  else{
+    var w=b.dataset.pct?Math.round(n.w*(+b.dataset.pct)/100):+b.dataset.w;
+    state.user={w:w,h:Math.round(w*n.h/n.w)};
+  }
+  changed();
+});
+
+/* tabs */
+var tabs=$$('.tab');
+function showTab(name,focus){
+  tabs.forEach(function(t){var on=t.dataset.tab===name;t.setAttribute('aria-selected',on);t.tabIndex=on?0:-1;if(on&&focus)t.focus()});
+  $$('.pane').forEach(function(p){p.hidden=p.dataset.pane!==name});
+}
+tabs.forEach(function(t,i){
+  t.addEventListener('click',function(){showTab(t.dataset.tab)});
+  t.addEventListener('keydown',function(e){
+    var d=e.key==='ArrowRight'?1:e.key==='ArrowLeft'?-1:0;if(!d)return;
+    e.preventDefault();showTab(tabs[(i+d+tabs.length)%tabs.length].dataset.tab,true);
+  });
+});
+
+/* UI sync from state */
+function setSeg(key,val){
+  var g=document.querySelector('.seg[data-key="'+key+'"]');if(!g)return;
+  Array.prototype.forEach.call(g.querySelectorAll('button'),function(b){b.setAttribute('aria-checked',b.dataset.v===String(val)?'true':'false')});
+}
+function syncUI(){
+  ['zoom','panX','panY','bright','contrast','sat','blur','quality'].forEach(function(k){
+    var r=$('#r-'+k),div=+(r.dataset.div||1);r.value=state[k]*div;$('#o-'+k).textContent=FORMAT[k](state[k]);
+  });
+  setSeg('aspect',state.aspect);setSeg('look',state.look);setSeg('fmt',state.fmt);
+  $('#lock').checked=state.lock;
+  syncSize();
+}
+function resetEdits(){
+  state.rot=0;state.flipH=false;state.flipV=false;state.aspect='orig';state.zoom=1;state.panX=.5;state.panY=.5;
+  state.user=null;state.lock=true;state.look='none';state.bright=0;state.contrast=0;state.sat=0;state.blur=0;
+  if(state.src){rebuildOriented();syncUI();schedulePreview();scheduleEncode()}
+}
+
+/* loading images */
+function setSource(src,name,size,isSample){
+  state.src=src;state.name=name;state.fileSize=size;state.isSample=isSample;
+  state.base=name.replace(/\.[^.]+$/,'')||'image';
+  state.fmt=state.fmt;
+  resetEdits();
+  $('#fname').value='';
+  $('#fname').placeholder=state.base+'-'+outSize().w+'x'+outSize().h;
+  $('#fileName').textContent=name;
+  $('#badge').hidden=!isSample;
+  $('#loading').hidden=true;
+  $('#fallback').hidden=true;
+  renderPreview();
+}
+async function decode(file){
+  try{return await createImageBitmap(file,{imageOrientation:'from-image'})}catch(e){}
+  try{return await createImageBitmap(file)}catch(e){}
+  return await new Promise(function(res,rej){
+    var u=URL.createObjectURL(file),im=new Image();
+    im.onload=function(){var c=document.createElement('canvas');c.width=im.naturalWidth;c.height=im.naturalHeight;c.getContext('2d').drawImage(im,0,0);URL.revokeObjectURL(u);res(c)};
+    im.onerror=function(){URL.revokeObjectURL(u);rej(new Error('decode'))};
+    im.src=u;
+  });
+}
+async function loadFile(file){
+  if(!file)return;
+  var looksImage=/^image\//.test(file.type)||/\.(jpe?g|png|webp|gif|avif|bmp)$/i.test(file.name);
+  if(!looksImage){toast('That file is not an image. Try JPEG, PNG, WebP or GIF.');return}
+  try{
+    var src=await decode(file);
+    if(!src.width||!src.height)throw new Error('empty');
+    setSource(src,file.name||'pasted-image.png',file.size,false);
+    showTab('resize');
+  }catch(e){toast("This browser can't read that file. Try a JPEG, PNG or WebP.")}
+}
+
+/* sample image (generated, with film-like grain so compression behaves like a photo) */
+var samplePromise=null;
+function makeSample(){
+  if(samplePromise)return samplePromise;
+  samplePromise=(async function(){
+    var W=2400,H=1600,c=document.createElement('canvas');c.width=W;c.height=H;
+    var x=c.getContext('2d'),s=20261008;
+    var rnd=function(){s|=0;s=s+0x6D2B79F5|0;var t=Math.imul(s^s>>>15,1|s);t=t+Math.imul(t^t>>>7,61|t)^t;return((t^t>>>14)>>>0)/4294967296};
+    var hz=H*0.6,g=x.createLinearGradient(0,0,0,hz);
+    g.addColorStop(0,'#0f2a4d');g.addColorStop(.5,'#2d6f90');g.addColorStop(.85,'#e8a56a');g.addColorStop(1,'#f7d9a1');
+    x.fillStyle=g;x.fillRect(0,0,W,hz);
+    var sx=W*.66,sy=hz-90;
+    g=x.createRadialGradient(sx,sy,10,sx,sy,520);
+    g.addColorStop(0,'rgba(255,240,200,.95)');g.addColorStop(.25,'rgba(255,205,140,.45)');g.addColorStop(1,'rgba(255,170,100,0)');
+    x.fillStyle=g;x.fillRect(0,0,W,hz);
+    x.fillStyle='#fff6dc';x.beginPath();x.arc(sx,sy,92,0,Math.PI*2);x.fill();
+    var layers=[{c:'#6c93a6',a:70,y:hz-170},{c:'#436f86',a:90,y:hz-110},{c:'#264a61',a:110,y:hz-60},{c:'#0f2a3a',a:80,y:hz-10}];
+    layers.forEach(function(L){
+      var p1=rnd()*6,p2=rnd()*6,p3=rnd()*6;
+      x.fillStyle=L.c;x.beginPath();x.moveTo(0,hz+2);
+      for(var i=0;i<=W;i+=8){var t=i/W;x.lineTo(i,L.y-L.a*(0.55*Math.sin(t*5.2+p1)+0.3*Math.sin(t*11.7+p2)+0.15*Math.sin(t*27+p3)))}
+      x.lineTo(W,hz+2);x.closePath();x.fill();
+    });
+    g=x.createLinearGradient(0,hz,0,H);g.addColorStop(0,'#2a5a73');g.addColorStop(1,'#0a1c2a');
+    x.fillStyle=g;x.fillRect(0,hz,W,H-hz);
+    for(var k=0;k<90;k++){
+      var y=hz+8+k*((H-hz-10)/90),w=(40+rnd()*220)*(1-k/130);
+      x.fillStyle='rgba(255,214,150,'+(0.5*(1-k/100)).toFixed(2)+')';
+      x.fillRect(sx-w/2+(rnd()-.5)*60,y,w,2+rnd()*3);
+    }
+    var id=x.getImageData(0,0,W,H),d=id.data;
+    for(var i=0;i<d.length;i+=4){var n=(rnd()-.5)*14;d[i]+=n;d[i+1]+=n;d[i+2]+=n}
+    x.putImageData(id,0,0);
+    var blob=await toBlob(c,'image/jpeg',.92);
+    return new File([blob],'dusk-ridge-sample.jpg',{type:'image/jpeg'});
+  })();
+  return samplePromise;
+}
+async function loadSample(){
+  try{
+    var f=await makeSample(),src=await decode(f);
+    setSource(src,f.name,f.size,true);
+  }catch(e){$('#loading').textContent='Open an image to begin.';$('#fileName').textContent='No image open'}
+}
+
+/* save + copy */
+function currentName(){
+  var o=outSize(),raw=$('#fname').value.trim()||(state.base+'-'+o.w+'x'+o.h);
+  raw=raw.replace(/[\\\/:*?"<>|]+/g,'-').replace(/\.(jpe?g|png|webp)$/i,'');
+  return raw+'.'+EXT[state.fmt];
+}
+var fbURL='';
+function showFallback(blob){
+  if(fbURL)URL.revokeObjectURL(fbURL);
+  fbURL=URL.createObjectURL(blob);
+  $('#fallbackImg').src=fbURL;$('#fallback').hidden=false;
+  $('#fallback').scrollIntoView({block:'nearest'});
+}
+$('#saveBtn').addEventListener('click',async function(){
+  if(!state.src)return;
+  var btn=this;btn.disabled=true;
+  try{
+    var blob=await ensureBlob();
+    if(!blob){toast("Couldn't encode this size. Reduce the width and height.");return}
+    var dl=await dlPromise;
+    if(!dl){showFallback(blob);return}
+    try{
+      await dl.save({filename:currentName(),data:blob});
+      toast('Saved '+fmtBytes(blob.size));
+    }catch(err){
+      var code=err&&err.code;
+      if(code==='declined')toast('Save cancelled.');
+      else if(code==='rate_limited')toast('Another save is waiting for your answer.');
+      else if(code==='too_large')toast('That file is too large to save. Reduce the size or quality.');
+      else showFallback(blob);
+    }
+  }finally{btn.disabled=!!state.encError}
+});
+$('#copyBtn').addEventListener('click',async function(){
+  if(!state.src)return;
+  try{
+    var o=outSize(),cv=document.createElement('canvas');
+    paint(cv,o.w,o.h,false);
+    var png=await toBlob(cv,'image/png');cv.width=cv.height=0;
+    if(!png)throw new Error('encode');
+    await navigator.clipboard.write([new ClipboardItem({'image/png':png})]);
+    toast('Copied to the clipboard as PNG.');
+  }catch(e){toast("Copying isn't available here. Use Save image instead.")}
+});
+
+/* file entry points */
+var fileInput=$('#file');
+$('#openBtn').addEventListener('click',function(){fileInput.click()});
+fileInput.addEventListener('change',function(){var f=fileInput.files&&fileInput.files[0];fileInput.value='';loadFile(f)});
+$('#sampleBtn').addEventListener('click',loadSample);
+$('#resetBtn').addEventListener('click',function(){resetEdits();toast('Edits reset.')});
+var stage=$('#stage');
+['dragenter','dragover'].forEach(function(t){stage.addEventListener(t,function(e){e.preventDefault();stage.classList.add('drag')})});
+['dragleave','dragend'].forEach(function(t){stage.addEventListener(t,function(){stage.classList.remove('drag')})});
+stage.addEventListener('drop',function(e){e.preventDefault();stage.classList.remove('drag');var f=e.dataTransfer&&e.dataTransfer.files&&e.dataTransfer.files[0];loadFile(f)});
+document.addEventListener('paste',function(e){
+  var files=(e.clipboardData&&e.clipboardData.files)||[];
+  for(var i=0;i<files.length;i++){if(/^image\//.test(files[i].type)){e.preventDefault();loadFile(files[i]);return}}
+});
+
+syncHints();
+loadSample();
+})();
+</script>
+
+</body></html>
